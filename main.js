@@ -95,7 +95,7 @@ class Main {
 
       // Display debug
       if(this.debug){
-         displayDebug();
+         this.displayDebug();
       }
    }
 }
