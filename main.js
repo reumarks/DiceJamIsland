@@ -1,10 +1,14 @@
 class Main {
    constructor(){
       // Create canvas
-      createCanvas(1280, 720);
-
+      let unitSize = window.innerWidth / 1280 < window.innerHeight / 720 ? window.innerWidth / 1280 : window.innerHeight / 720;
+      createCanvas(unitSize * 1280, unitSize * 720);
+      window.addEventListener('resize', this.resizeCanvas, false);
+      
       // Configure canvas
-      document.querySelector("canvas").getContext("2d").imageSmoothingEnabled = false;
+      this.canvas = document.querySelector("canvas");
+      this.ctx = this.canvas.getContext("2d")
+      this.ctx.imageSmoothingEnabled = false;
       noStroke();
       frameRate(0);
 
@@ -23,6 +27,9 @@ class Main {
 
       // Create scene
       this.game = new Game();
+
+      // Debug mode
+      this.debug = true;
    }
 
    loadImages() {
@@ -56,7 +63,7 @@ class Main {
          });
       });
    }
-
+   
    setDeltaTime(){
       // Update deltaTime
       this.now = Date.now();
@@ -84,7 +91,7 @@ class Main {
       this.game.display(this.pixelGrid, this.images);
 
       // Display pixel grid
-      image(this.pixelGrid, 0, 0, 1280, 720);
+      image(this.pixelGrid, 0, 0, width, height);
 
       // Display debug
       if(this.debug){

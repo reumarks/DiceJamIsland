@@ -6,7 +6,7 @@ class GameWorld {
 
    worldGen(){
       for(let i = -3; i <= 3; i++){
-         this.blocks.push(new Block(i, 0, Math.random() * 6));
+         //this.blocks.push(new Block(i, 0, Math.random() * 6));
       }
    }
 
