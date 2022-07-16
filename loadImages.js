@@ -6,7 +6,15 @@ function loadImages() {
    ];
    let spriteSheetsPaths = [
       // [Sprite Name (without index), Sprite Sheet Path, X, Y, Width, Height, Num]
-      ["Dice", "images/DiceSheet.png", 0, 0, 7, 7, 6]
+      ["Frog", "images/FrogSheet.png", 0, 0, 7, 7, 3],
+      ["Dice", "images/DiceSheet.png", 0, 0, 7, 7, 6],
+      ["GroundDice0-", "images/GroundSheet.png", 0, 0, 14, 14, 7],
+      ["GroundDice1-", "images/GroundSheet.png", 0, 14, 14, 14, 7],
+      ["GroundDice2-", "images/GroundSheet.png", 0, 28, 14, 14, 7],
+      ["GroundDice3-", "images/GroundSheet.png", 0, 42, 14, 14, 7],
+      ["GroundDice4-", "images/GroundSheet.png", 0, 56, 14, 14, 7],
+      ["GroundDice5-", "images/GroundSheet.png", 0, 70, 14, 14, 7],
+      ["GroundDice6-", "images/GroundSheet.png", 0, 84, 14, 14, 7],
    ];
    imagePaths.forEach((item, index) => {
       images[item[0]] = loadImage(item[1]); 
