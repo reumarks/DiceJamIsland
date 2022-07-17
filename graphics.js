@@ -13,10 +13,9 @@ class Graphics {
       let imagePaths = [
          // [Image name, Image Path]
          ["Background", "images/Background.png"],
-         ["Foreground", "images/Foreground.png"],
-         ["Cloud1", "images/Cloud1.png"],
-         ["Water1", "images/Water1.png"],
-         ["Water2", "images/Water2.png"],
+         ["Cloud1", "images/Cloud.png"],
+         ["Water1", "images/Water.png"],
+         ["UIBerry", "images/UIBerry.png"],
       ];
 
       let spriteSheetsPaths = [
@@ -24,6 +23,13 @@ class Graphics {
          ["Frog", "images/FrogSheet.png", 0, 0, 7, 7, 10],
          ["Dice", "images/DiceSheet.png", 0, 0, 7, 7, 6],
          ["RollingDice", "images/RollingDiceSheet.png", 0, 0, 8, 8, 5],
+         ["Number", "images/NumberSheet.png", 0, 0, 4, 11, 10],
+         ["Plant1,", "images/PlantSheet.png", 0, 14, 14, 14, 6],
+         ["Plant2,", "images/PlantSheet.png", 0, 28, 14, 14, 6],
+         ["Plant3,", "images/PlantSheet.png", 0, 42, 14, 14, 6],
+         ["Plant4,", "images/PlantSheet.png", 0, 56, 14, 14, 6],
+         ["Plant5,", "images/PlantSheet.png", 0, 70, 14, 14, 6],
+         ["Plant6,", "images/PlantSheet.png", 0, 84, 14, 14, 6],
          ["GroundDice0,", "images/GroundSheet.png", 0, 0, 14, 14, 7],
          ["GroundDice1,", "images/GroundSheet.png", 0, 14, 14, 14, 7],
          ["GroundDice2,", "images/GroundSheet.png", 0, 28, 14, 14, 7],

@@ -19,6 +19,8 @@ class Game {
       this.waterLevel = 4 * 15 - 4;
       this.waterTime = 0;
       this.virtualWaterLevel = 0;
+      this.berries = 0;
+      this.water = 3;
    };
 
    worldGen(){
@@ -31,7 +33,7 @@ class Game {
                this.addTile(num, x, y);
             }else if(num >= 7 && num <=14){
                this.addTile(num - 6, x, y);
-               this.tiles[y][x].age = 6;
+               this.tiles[y][x].age = 8;
             }else if(num == 15){
                this.player = new Player(x * 15 + 2, y * 15 - 10);
             }
@@ -54,6 +56,7 @@ class Game {
       });
       this.player.display();
       this.displayWater();
+      this.displayUI();
       //main.graphics.staticImage("Foreground", 0, 0, 128, 72);
    }
 
@@ -66,6 +69,14 @@ class Game {
    displayWater(){
       main.graphics.staticImage("Water1", Math.floor(main.graphics.camX) % 9 - 12 - Math.floor(Math.cos(this.waterTime * 3) * 4), Math.floor(main.graphics.camY) + Math.floor(this.waterLevel + Math.PI/2 - Math.sin(this.waterTime * 3) * 2), 85, 41);
       main.graphics.staticImage("Water1",  Math.floor(main.graphics.camX) % 9 + 85 - 12 - Math.floor(Math.cos(this.waterTime * 3) * 4), Math.floor(main.graphics.camY) + Math.floor(this.waterLevel + Math.PI/2 - Math.sin(this.waterTime * 3) * 2), 85, 41);
+   }
+
+   displayUI(){
+      var berriesAsString = this.berries.toString();
+      berriesAsString.split('').map(function(number, index) {
+         main.graphics.staticImage("Number" + number, 18 + index * 4, 1, 4, 11);
+      });
+      main.graphics.staticImage("UIBerry", 1, 1, 16, 11);
    }
 
    update(deltaTime){
@@ -131,21 +142,40 @@ class Tile{
       this.num = num;
       this.age = 0;
       this.canGrow = true;
+      this.picked = false;
+      this.action = "";
+      this.water = 0;
    }
 
    display(){
       if(this.canGrow){
-         main.graphics.image("GroundDice" + Math.floor(this.age) + "," + this.num, this.x, this.y, this.s, this.s);
+         main.graphics.image("GroundDice" + Math.floor(this.age < 5 ? this.age : 5) + "," + this.num, this.x, this.y, this.s, this.s);
+         if(this.age >= 5){
+            main.graphics.image("Plant" + (this.num - 1).toString() + "," + Math.floor(this.age - 4), this.x, this.y - 14, this.s, this.s);
+         }
       }else{
          main.graphics.image("GroundDice1,0", this.x, this.y, this.s, this.s);
       }
    }
 
    update(deltaTime){
-      if(this.canGrow){
-         if(this.age < 6 && this.num > 0){
+      if(this.picked){
+         this.action = "none";
+      }else if(this.canGrow){
+         if(Math.floor(this.age) < 8 && this.num > 0 && this.age < this.water * (9/this.num)){
             this.age += deltaTime;
          }
+         if(Math.floor(this.age) == 8){
+            this.action = "pick";
+         }else if(this.water < this.num){
+            this.action = "water";
+         }else if(this.num == 0){
+            this.action = "roll";
+         }else{
+            this.action = "none";
+         } 
+      }else{
+         this.action = "none";
       }
    }
 }

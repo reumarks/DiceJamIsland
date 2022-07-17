@@ -44,7 +44,9 @@ class Main {
       this.game = new Game();
 
       // Debug mode
-      this.debug = true;
+      this.debug = false;
+
+      this.highscore = 0;
    }
    
    setDeltaTime(){

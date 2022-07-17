@@ -151,7 +151,13 @@ class Player {
 
       // Plant
       if(keys[DOWN] && this.standingOn){
-         this.rolling = true;
+         if(this.standingOn.action == "roll"){
+            this.rolling = true;
+         }
+         if(this.standingOn.action == "pick"){
+            main.game.berries += this.standingOn.num;
+            this.standingOn.picked = true;
+         }
       }
       if(this.rolling){
          this.waitForRoll += 25 * deltaTime;
@@ -187,8 +193,8 @@ class Player {
          Math.min(this.sx * deltaTime,  -1), this.h - 0.1
       );
       this.tDown = this.checkCollision(
-         0.1, this.h + Math.max(this.sy * deltaTime,  1),
-         this.w - 0.1, this.h + Math.max(this.sy * deltaTime,  1)
+         1, this.h + Math.max(this.sy * deltaTime,  1),
+         this.w - 1, this.h + Math.max(this.sy * deltaTime,  1)
       );
       if(this.tDown[0] && this.tDown[1]){
          this.standingOn = ((Math.abs((this.tDown[0].x + 14/2) - (Math.floor(this.x) + (this.direction == 0 ? -2 : 2) + 7/2)) < Math.abs((this.tDown[1].x + 14/2) - (Math.floor(this.x) + (this.direction == 0 ? -2 : 2) + 7/2))) ? this.tDown[0] : this.tDown[1]);
