@@ -11,7 +11,7 @@ class Main {
       this.ctx = this.canvas.getContext("2d")
       this.ctx.imageSmoothingEnabled = false;
       noStroke();
-      frameRate(0);
+      frameRate(60);
 
       // Track update times
       this.now = 0;
