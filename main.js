@@ -12,7 +12,6 @@ class Main {
       this.ctx.imageSmoothingEnabled = false;
       this.canvas.tabIndex = "1";
       this.canvas.addEventListener('keydown', function(e){
-         console.log("Okay");
          var thisKeycode;
          if (window.event){
             thisKeycode = window.event.keyCode;

@@ -21,6 +21,8 @@ class Player {
       this.time = 0;
       this.currentRoll = 0;
       this.waitForRoll = 1;
+      this.inWater = false;
+      this.swimTime = 0;
    }
    
    display(){
@@ -51,14 +53,36 @@ class Player {
    }
 
    update(deltaTime){
-      // General Time
+      // General Player Management
+      if(main.game.virtualWaterLevel){
+         if(this.y > main.game.virtualWaterLevel - 5){
+            //this.y = main.game.virtualWaterLevel - 2;
+            this.sy = 30 + (main.game.virtualWaterLevel - 4 - this.y) * 10;
+            this.ay = 0;
+            this.inWater = true;
+            this.swimTime += 4 * deltaTime;
+         }else{
+            this.swimTime = 0;
+            this.inWater = false;
+         }
+      }
       this.time += 5 * deltaTime;
       this.time %= 100;
 
+      
+      // Air, water resistance and gravity
+      if(!this.inWater){
+         this.ay = 300;
+         this.sy *= 0.998;
+      }else{
+         this.sy *= 0.998;
+      }
+
       // Jump calc
-      if(this.standingOn){
+      if(this.standingOn && !this.inWater){
          this.sy = 0;
          this.ay = 0;
+         this.ax = 0;
          this.lastGrounded = 0;
          this.standingTime += 1 * deltaTime;
          this.hop = false;
@@ -67,27 +91,39 @@ class Player {
          this.standingTime = 0;
       }
 
-      // Air resistance and gravity
-      this.ay = 300;
-      this.sy *= 0.998;
-
       // Controls
-      if((keys[RIGHT] && keys[LEFT]) || (!keys[LEFT] && !keys[RIGHT]) || keys[DOWN]){
-         this.ax = 0;
-         this.sx *= 0.70;
-      }else{ 
-         this.sx *= 0.999;
-         if(this.standingTime > 0.1 && !this.hop){
-            if(keys[UP] || keys[32]){
-               this.sy = -120;
-            }else{
-               this.sy = -40;
+      if(!this.inWater){
+         if((keys[RIGHT] && keys[LEFT]) || (!keys[LEFT] && !keys[RIGHT]) || keys[DOWN]){
+            this.sx *= 0.70;
+         }else{ 
+            this.sx *= 0.999;
+            if(this.standingTime > 0.1 && !this.hop){
+               if(keys[UP] || keys[32]){
+                  this.sy = -120;
+               }else{
+                  this.sy = -40;
+               }
+               this.hop = true;
+               if(keys[RIGHT]){
+                  this.sx = 50;
+               }else{
+                  this.sx = -50;
+               }
             }
-            this.hop = true;
-            if(keys[RIGHT]){
-               this.sx = 50;
+         }
+      }else{
+         if((keys[RIGHT] && keys[LEFT]) || (!keys[LEFT] && !keys[RIGHT]) || this.swimTime < 1){
+            this.sx *= 0.89;
+         }else{
+            if(keys[UP] || keys[32]){
+               this.sy = -110;
             }else{
-               this.sx = -50;
+               this.sy = -70;
+            }
+            if(keys[RIGHT]){
+               this.sx = 30;
+            }else{
+               this.sx = -30;
             }
          }
       }
@@ -110,6 +146,7 @@ class Player {
       if((this.standingTime > 0.1 || !this.standingOn) && !(this.tRight && this.sx > 0) && !(this.tLeft && this.sx < 0)){
          this.x += this.sx * deltaTime;
       }
+
       this.y += this.sy * deltaTime;
 
       // Plant
@@ -154,14 +191,10 @@ class Player {
          this.w - 0.1, this.h + Math.max(this.sy * deltaTime,  1)
       );
       if(this.tDown[0] && this.tDown[1]){
-         this.standingOn = ((Math.abs((this.tDown[0].x + 14/2) - (Math.floor(this.x) + (this.direction == 0 ? -3 : 3) + 7/2)) < Math.abs((this.tDown[1].x + 14/2) - (Math.floor(this.x) + (this.direction == 0 ? -3 : 3) + 7/2))) ? this.tDown[0] : this.tDown[1]);
+         this.standingOn = ((Math.abs((this.tDown[0].x + 14/2) - (Math.floor(this.x) + (this.direction == 0 ? -2 : 2) + 7/2)) < Math.abs((this.tDown[1].x + 14/2) - (Math.floor(this.x) + (this.direction == 0 ? -2 : 2) + 7/2))) ? this.tDown[0] : this.tDown[1]);
       }else{
          this.standingOn = this.tDown[0] ? this.tDown[0] : this.tDown[1] ? this.tDown[1] : false;
       }
-      //this.tUp = this.checkCollision(
-      //   0.1, Math.min(this.sy * deltaTime,  -1),
-      //   this.w - 0.1, Math.min(this.sy * deltaTime,  -1)
-      //);
    }
 
    checkCollision(x1, y1, x2, y2){

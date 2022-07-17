@@ -14,7 +14,9 @@ class Graphics {
          // [Image name, Image Path]
          ["Background", "images/Background.png"],
          ["Foreground", "images/Foreground.png"],
-         ["Cloud1", "images/Cloud1.png"]
+         ["Cloud1", "images/Cloud1.png"],
+         ["Water1", "images/Water1.png"],
+         ["Water2", "images/Water2.png"],
       ];
 
       let spriteSheetsPaths = [
