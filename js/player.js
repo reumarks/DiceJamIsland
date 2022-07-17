@@ -23,6 +23,7 @@ class Player {
       this.waitForRoll = 1;
       this.inWater = false;
       this.swimTime = 0;
+      this.takingAction = false;
    }
    
    display(){
@@ -48,7 +49,7 @@ class Player {
       main.graphics.image("Frog" + (this.sprite + this.direction * 5).toString(), this.x, this.y, 7, 7);
 
       if(this.rolling){
-         main.graphics.image("RollingDice" + this.currentRoll, this.x, this.y - 8, 8, 8);
+         main.graphics.image("RollingDice" + this.currentRoll, this.x, this.y - 5, 6, 6);
       }
    }
 
@@ -56,7 +57,6 @@ class Player {
       // General Player Management
       if(main.game.virtualWaterLevel){
          if(this.y > main.game.virtualWaterLevel - 5){
-            //this.y = main.game.virtualWaterLevel - 2;
             this.sy = 30 + (main.game.virtualWaterLevel - 4 - this.y) * 10;
             this.ay = 0;
             this.inWater = true;
@@ -74,8 +74,12 @@ class Player {
       if(!this.inWater){
          this.ay = 300;
          this.sy *= 0.998;
+         main.game.water = Math.floor(main.game.water);
       }else{
          this.sy *= 0.998;
+         if(main.game.water < 3){
+            main.game.water += 5 * deltaTime;
+         }
       }
 
       // Jump calc
@@ -149,15 +153,29 @@ class Player {
 
       this.y += this.sy * deltaTime;
 
-      // Plant
-      if(keys[DOWN] && this.standingOn){
-         if(this.standingOn.action == "roll"){
+      if(keys[DOWN] && this.standingOn && Math.abs(this.x - main.game.jamStandX) < 6){
+         console.log("You win");
+      }else if(keys[DOWN] && this.standingOn && !this.takingAction){
+         if(this.standingOn.action == "roll" && main.game.berries > 0){
+            main.game.berries --;
             this.rolling = true;
+            this.takingAction = true;
          }
          if(this.standingOn.action == "pick"){
             main.game.berries += this.standingOn.num;
             this.standingOn.picked = true;
+            this.takingAction = true;
          }
+         if(this.standingOn.action == "water"){
+            if(main.game.water > 0){
+               this.standingOn.water ++;
+               main.game.water --;
+               this.takingAction = true;
+            }
+         }
+      }
+      if(this.takingAction && !keys[DOWN]){
+         this.takingAction = false;
       }
       if(this.rolling){
          this.waitForRoll += 25 * deltaTime;
@@ -168,12 +186,13 @@ class Player {
          }
          if(!keys[DOWN]){
             this.rolling = false;
+            this.standingOn.chosen = true,
             this.currentRoll = 0;
             main.game.seedDice.push(
                new SeedDice(
                   Math.round(Math.random() * 5),
-                  this.x,
-                  this.y - 10,
+                  this.x + 1,
+                  this.y - 9,
                   this.standingOn
                )
             );
@@ -220,9 +239,13 @@ class Player {
    }
 
    cameraFollow(){
-      //main.graphics.camX = lerp(main.graphics.camX, WIDTH / 2 - this.x, (1 - 0.5^(deltaTime)));
-      //main.graphics.camY = lerp(main.graphics.camY, HEIGHT / 2 - this.y, (1 - 0.5^(deltaTime)));
       main.graphics.camX = -floor(this.x) +  WIDTH / 2;
+      //if(-main.graphics.camX){
+      //   main.graphics.camX = 0;
+      //}
+      if(-(main.graphics.camX - WIDTH + 28) > main.game.jamStandX){
+         main.graphics.camX = -main.game.jamStandX + WIDTH - 28;
+      }
       main.graphics.camY = -floor(this.y) +  HEIGHT / 2;
    }
 }
@@ -240,7 +263,7 @@ class SeedDice {
 
    display(){
       if(this.time <= 1.5){
-         main.graphics.image("Dice" + this.num, Math.floor(this.x), Math.floor(this.y), 7, 7);
+         main.graphics.image("Dice" + this.num, Math.floor(this.x), Math.floor(this.y), 5, 5);
       }
    }
 

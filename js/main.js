@@ -1,6 +1,7 @@
 class Main {
    constructor(){
       // Create canvas
+      this.state = "playing";
       let clarity = 10;
       let unitSize = window.innerWidth / WIDTH < window.innerHeight / HEIGHT ? window.innerWidth / (WIDTH * clarity) : window.innerHeight / (HEIGHT * clarity);
       createCanvas(unitSize * WIDTH * clarity, unitSize * HEIGHT * clarity);
@@ -77,6 +78,10 @@ class Main {
    display(){
       // Display scene to pixel grid
       this.game.display();
+
+      if(keys[82]){
+         this.game = new Game();
+      }
 
       // Display pixel grid
       image(this.graphics.pixelGrid, 0, 0, width, height);
