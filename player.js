@@ -154,7 +154,7 @@ class Player {
          this.w - 0.1, this.h + Math.max(this.sy * deltaTime,  1)
       );
       if(this.tDown[0] && this.tDown[1]){
-         this.standingOn = ((Math.abs((this.tDown[0].x + 14/2) - (this.x + 7/2)) < Math.abs((this.tDown[1].x + 14/2) - (this.x + 7/2))) ? this.tDown[0] : this.tDown[1]);
+         this.standingOn = ((Math.abs((this.tDown[0].x + 14/2) - (Math.floor(this.x) + (this.direction == 0 ? -3 : 3) + 7/2)) < Math.abs((this.tDown[1].x + 14/2) - (Math.floor(this.x) + (this.direction == 0 ? -3 : 3) + 7/2))) ? this.tDown[0] : this.tDown[1]);
       }else{
          this.standingOn = this.tDown[0] ? this.tDown[0] : this.tDown[1] ? this.tDown[1] : false;
       }

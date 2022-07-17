@@ -10,6 +10,26 @@ class Main {
       this.canvas = document.querySelector("canvas");
       this.ctx = this.canvas.getContext("2d")
       this.ctx.imageSmoothingEnabled = false;
+      this.canvas.tabIndex = "1";
+      this.canvas.addEventListener('keydown', function(e){
+         console.log("Okay");
+         var thisKeycode;
+         if (window.event){
+            thisKeycode = window.event.keyCode;
+         }
+         keys[thisKeycode] = true;
+         e.preventDefault();
+         return false;
+      });
+      this.canvas.addEventListener('keyup', function(e){
+         var thisKeycode;
+         if (window.event){
+            thisKeycode = window.event.keyCode;
+         }
+         keys[thisKeycode] = false;
+         e.preventDefault();
+         return false;
+      });
       noStroke();
       frameRate(60);
 

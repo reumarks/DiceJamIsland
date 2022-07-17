@@ -8,12 +8,4 @@ const HEIGHT = 72;
 
 function lerp(a, b, t) {
    return (1 - t) * a + t * b;
- }
-
-keyPressed = () => {
-   keys[keyCode] = true;
-}
-
-keyReleased = () => {
-   keys[keyCode] = false;
 }
