@@ -12,13 +12,16 @@ class Graphics {
    loadImages() {
       let imagePaths = [
          // [Image name, Image Path]
-         ["Background", "images/Background.png"]
+         ["Background", "images/Background.png"],
+         ["Foreground", "images/Foreground.png"],
+         ["Cloud1", "images/Cloud1.png"]
       ];
 
       let spriteSheetsPaths = [
          // [Sprite Name (without index), Sprite Sheet Path, X, Y, Width, Height, Num]
          ["Frog", "images/FrogSheet.png", 0, 0, 7, 7, 10],
          ["Dice", "images/DiceSheet.png", 0, 0, 7, 7, 6],
+         ["RollingDice", "images/RollingDiceSheet.png", 0, 0, 8, 8, 5],
          ["GroundDice0,", "images/GroundSheet.png", 0, 0, 14, 14, 7],
          ["GroundDice1,", "images/GroundSheet.png", 0, 14, 14, 14, 7],
          ["GroundDice2,", "images/GroundSheet.png", 0, 28, 14, 14, 7],

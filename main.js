@@ -32,6 +32,9 @@ class Main {
       // Update deltaTime
       this.now = Date.now();
       this.deltaTime = (this.now - this.lastUpdate) / 1000;
+      if(this.deltaTime > 0.033){
+         this.deltaTime = 0.033;
+      }
       this.lastUpdate = this.now;
    }
 
