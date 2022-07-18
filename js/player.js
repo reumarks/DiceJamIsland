@@ -187,8 +187,9 @@ class Player {
             this.waitForRoll = 0;
          }
          if(this.inWater){
-            this.action = "none";
+            this.currentAction = "none";
             this.currentRoll = 0;
+            this.berryCount ++;
          }else if(!keys[DOWN]){
             this.standingOn.chosen = true,
             this.currentRoll = 0;
