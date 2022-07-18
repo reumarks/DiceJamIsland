@@ -31,12 +31,11 @@ class Main {
          return false;
       });
       noStroke();
-      frameRate(60);
+      frameRate(FRAME_RATE);
 
       // Track update times
       this.now = 0;
       this.lastUpdate = Date.now();
-      this.deltaTime = 0;
       
       // Load images
       this.graphics = new Graphics(this.pixelGrid);
@@ -53,9 +52,9 @@ class Main {
    setDeltaTime(){
       // Update deltaTime
       this.now = Date.now();
-      this.deltaTime = (this.now - this.lastUpdate) / 1000;
-      if(this.deltaTime > 0.033){
-         this.deltaTime = 0.033;
+      deltaTime = (this.now - this.lastUpdate) / 1000;
+      if(deltaTime > 0.033){
+         deltaTime = 0.033;
       }
       this.lastUpdate = this.now;
    }
@@ -65,14 +64,14 @@ class Main {
       this.setDeltaTime();
 
       // Update scene
-      this.game.update(this.deltaTime);
+      this.game.update();
    }
 
    displayDebug(){
       fill(255, 255, 255);
       rect(0, 0, 60, 20);
       fill(0, 0, 0);
-      text((1/this.deltaTime).toFixed(1) + " fps", 5, 15);
+      text((1/deltaTime).toFixed(1) + " fps", 5, 15);
    }
    
    display(){

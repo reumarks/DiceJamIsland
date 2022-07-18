@@ -23,7 +23,9 @@ class Player {
       this.waitForRoll = 1;
       this.inWater = false;
       this.swimTime = 0;
-      this.takingAction = false;
+      this.currentAction = "none";
+      this.berryCount = 0;
+      this.waterCount = 3;
    }
    
    display(){
@@ -37,7 +39,7 @@ class Player {
             this.sprite = 1;
          }else{
             if(this.time % 15 > 0 && this.time % 15 < 0.5){
-               this.sprite = 4;
+               this.sprite = 3;
             }else{
                this.sprite = 0;
             }
@@ -46,18 +48,17 @@ class Player {
          this.sprite = 2;
       }
 
-      main.graphics.image("Frog" + (this.sprite + this.direction * 5).toString(), this.x, this.y, 7, 7);
+      main.graphics.image("FrogSheet" + this.sprite + "," + this.direction, this.x, this.y, 7, 7);
 
-      if(this.rolling){
-         main.graphics.image("RollingDice" + this.currentRoll, this.x, this.y - 5, 6, 6);
+      if(this.currentAction == "roll"){
+         main.graphics.image("DiceRollSheet" + this.currentRoll + "," + "0", this.x, this.y - 5, 6, 6);
       }
    }
 
-   update(deltaTime){
-      // General Player Management
-      if(main.game.virtualWaterLevel){
-         if(this.y > main.game.virtualWaterLevel - 5){
-            this.sy = 30 + (main.game.virtualWaterLevel - 4 - this.y) * 10;
+   update(){
+      if(main.game.water.virtualLevel){
+         if(this.y > main.game.water.virtualLevel - 5){
+            this.sy = 30 + (main.game.water.virtualLevel - 4 - this.y) * 10;
             this.ay = 0;
             this.inWater = true;
             this.swimTime += 4 * deltaTime;
@@ -73,12 +74,13 @@ class Player {
       // Air, water resistance and gravity
       if(!this.inWater){
          this.ay = 300;
-         this.sy *= 0.998;
-         main.game.water = Math.floor(main.game.water);
+         this.sy *= Math.pow(0.998, deltaTime * FRAME_RATE)
+         this.waterCount = Math.floor(this.waterCount);
       }else{
-         this.sy *= 0.998;
-         if(main.game.water < 3){
-            main.game.water += 5 * deltaTime;
+         this.sy *= Math.pow(0.998, deltaTime * FRAME_RATE)
+
+         if(this.waterCount < 3){
+            this.waterCount += 5 * deltaTime;
          }
       }
 
@@ -98,12 +100,12 @@ class Player {
       // Controls
       if(!this.inWater){
          if((keys[RIGHT] && keys[LEFT]) || (!keys[LEFT] && !keys[RIGHT]) || keys[DOWN]){
-            this.sx *= 0.70;
+            this.sx *= Math.pow(0.7, deltaTime * FRAME_RATE);
          }else{ 
-            this.sx *= 0.999;
+            this.sx *= Math.pow(0.999, deltaTime * FRAME_RATE);
             if(this.standingTime > 0.1 && !this.hop){
                if(keys[UP] || keys[32]){
-                  this.sy = -120;
+                  this.sy = -90;
                }else{
                   this.sy = -40;
                }
@@ -117,12 +119,10 @@ class Player {
          }
       }else{
          if((keys[RIGHT] && keys[LEFT]) || (!keys[LEFT] && !keys[RIGHT]) || this.swimTime < 1){
-            this.sx *= 0.89;
+            this.sx *= Math.pow(0.89, deltaTime * FRAME_RATE)
          }else{
             if(keys[UP] || keys[32]){
                this.sy = -110;
-            }else{
-               this.sy = -70;
             }
             if(keys[RIGHT]){
                this.sx = 30;
@@ -134,7 +134,7 @@ class Player {
 
       this.sy += this.ay * deltaTime;
 
-      this.checkCollisions(deltaTime);
+      this.checkCollisions();
 
       if(this.tDown && this.sy >= 0){
          this.sy = 0;
@@ -144,7 +144,7 @@ class Player {
       if(this.tRight && this.sx >= 0){
          this.x = this.tRight[0].x - this.w;
       }else if(this.tLeft && this.sx <= 0){
-         this.x = this.tLeft[0].x + 14;
+         this.x = this.tLeft[0].x + TILE_SIZE;
       }
       
       if((this.standingTime > 0.1 || !this.standingOn) && !(this.tRight && this.sx > 0) && !(this.tLeft && this.sx < 0)){
@@ -155,29 +155,26 @@ class Player {
 
       if(keys[DOWN] && this.standingOn && Math.abs(this.x - main.game.jamStandX) < 6){
          console.log("You win");
-      }else if(keys[DOWN] && this.standingOn && !this.takingAction){
-         if(this.standingOn.action == "roll" && main.game.berries > 0){
-            main.game.berries --;
-            this.rolling = true;
-            this.takingAction = true;
+      }else if(keys[DOWN] && this.standingOn && this.currentAction == "none"){
+         if(this.standingOn.action == "roll" && this.berryCount > 0){
+            this.berryCount --;
+            this.currentAction = this.standingOn.action;
          }
          if(this.standingOn.action == "pick"){
-            main.game.berries += this.standingOn.num;
+            this.berryCount += this.standingOn.num;
             this.standingOn.picked = true;
-            this.takingAction = true;
+            this.currentAction = this.standingOn.action;
          }
          if(this.standingOn.action == "water"){
-            if(main.game.water > 0){
+            if(this.waterCount > 0){
                this.standingOn.water ++;
-               main.game.water --;
-               this.takingAction = true;
+               this.waterCount --;
+               this.currentAction = this.standingOn.action;
             }
          }
       }
-      if(this.takingAction && !keys[DOWN]){
-         this.takingAction = false;
-      }
-      if(this.rolling){
+
+      if(this.currentAction == "roll"){
          this.waitForRoll += 25 * deltaTime;
          if(this.waitForRoll > 1){
             this.currentRoll ++;
@@ -185,24 +182,20 @@ class Player {
             this.waitForRoll = 0;
          }
          if(!keys[DOWN]){
-            this.rolling = false;
             this.standingOn.chosen = true,
             this.currentRoll = 0;
-            main.game.seedDice.push(
-               new SeedDice(
-                  Math.round(Math.random() * 5),
-                  this.x + 1,
-                  this.y - 9,
-                  this.standingOn
-               )
-            );
+            main.game.dice.push(new Dice(Math.round(Math.random() * 5), this.x + 1, this.y - 9, this.standingOn));
          }
+      }
+
+      if(this.currentAction != "none" && !keys[DOWN]){
+         this.currentAction = "none";
       }
 
       this.cameraFollow();
    }
    
-   checkCollisions(deltaTime){
+   checkCollisions(){
       this.tRight = this.checkCollision(
          this.w + Math.max(this.sx * deltaTime,  1), 0.1,
          this.w + Math.max(this.sx * deltaTime,  1), this.h - 0.1
@@ -216,7 +209,7 @@ class Player {
          this.w - 1, this.h + Math.max(this.sy * deltaTime,  1)
       );
       if(this.tDown[0] && this.tDown[1]){
-         this.standingOn = ((Math.abs((this.tDown[0].x + 14/2) - (Math.floor(this.x) + (this.direction == 0 ? -2 : 2) + 7/2)) < Math.abs((this.tDown[1].x + 14/2) - (Math.floor(this.x) + (this.direction == 0 ? -2 : 2) + 7/2))) ? this.tDown[0] : this.tDown[1]);
+         this.standingOn = ((Math.abs((this.tDown[0].x + TILE_SIZE/2) - (Math.floor(this.x) + (this.direction == 0 ? -2 : 2) + 7/2)) < Math.abs((this.tDown[1].x + TILE_SIZE/2) - (Math.floor(this.x) + (this.direction == 0 ? -2 : 2) + 7/2))) ? this.tDown[0] : this.tDown[1]);
       }else{
          this.standingOn = this.tDown[0] ? this.tDown[0] : this.tDown[1] ? this.tDown[1] : false;
       }
@@ -239,44 +232,13 @@ class Player {
    }
 
    cameraFollow(){
-      main.graphics.camX = -floor(this.x) +  WIDTH / 2;
-      //if(-main.graphics.camX){
-      //   main.graphics.camX = 0;
-      //}
-      if(-(main.graphics.camX - WIDTH + 28) > main.game.jamStandX){
-         main.graphics.camX = -main.game.jamStandX + WIDTH - 28;
+      main.game.camX = -floor(this.x) +  WIDTH / 2;
+      if(main.game.camX > 2 * TILE_SIZE){
+         main.game.camX = 2 * TILE_SIZE;
       }
-      main.graphics.camY = -floor(this.y) +  HEIGHT / 2;
-   }
-}
-
-class SeedDice {
-   constructor(num, x, y, tile){
-      this.num = num;
-      this.tile = tile;
-      this.x = x;
-      this.y = y;
-      this.startX = x;
-      this.startY = y;
-      this.time = 0;
-   }
-
-   display(){
-      if(this.time <= 1.5){
-         main.graphics.image("Dice" + this.num, Math.floor(this.x), Math.floor(this.y), 5, 5);
+      if(main.game.camX < -main.game.jamStandX + WIDTH - 2 * TILE_SIZE){
+         main.game.camX = -main.game.jamStandX + WIDTH - 2 * TILE_SIZE;
       }
-   }
-
-   update(deltaTime, index){
-      this.time += 5 * deltaTime;
-      if(this.time > 1){
-         this.x = lerp(this.startX, this.tile.x + 7, (this.time - 1) * 2);
-         this.y = lerp(this.startY, this.tile.y + 7, (this.time - 1) * 2);
-      }
-      if(this.time >= 1.5){
-         this.tile.num = this.num + 1;
-         this.tile.age = 0;
-         main.game.seedDice.pop(index);
-      }
+      main.game.camY = -floor(this.y) +  HEIGHT / 2;
    }
 }

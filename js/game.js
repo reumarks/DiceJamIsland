@@ -1,10 +1,10 @@
 class Game {
    constructor(){
-      const r = 4;
-      const c = 3;
-      this.seedDice = [];
+      this.dice = [];
       this.tiles = [];
-      this.map = [// -1 is air, 0 is full block, 1-6 is rolled dice, 7-14 is alive version of that, 15 is player, 16 is end
+      this.clouds = [];
+      this.map = [
+         // -1 is air, 0 is full block, 1-6 is rolled dice, 7-14 is alive version of that, 15 is player, 16 is end
          [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 16, -1],
          [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0],
          [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0],
@@ -15,14 +15,13 @@ class Game {
          [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
          [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       ];
-      this.clouds = [new Cloud(), new Cloud(), new Cloud(), new Cloud(), new Cloud(), new Cloud()];
       this.worldGen();
-      this.player;
-      this.waterLevel = 6 * 15 - 6;
-      this.waterTime = 0;
-      this.virtualWaterLevel = 0;
-      this.berries = 0;
-      this.water = 3;
+      this.water = new Water(TILE_SIZE * (this.map.length - 3) - 6);
+      for(var i = 0; i < 6; i++){
+         this.clouds.push(new Cloud());
+      }
+      this.camX = 0;
+      this.camY = 0;
    };
 
    worldGen(){
@@ -40,11 +39,27 @@ class Game {
             }else if(num == 15){
                this.player = new Player(x * 15 + 2, y * 15 - 10);
             }else if(num = 16){
-               this.jamStandX = (x * 14) - 2;
-               this.jamStandY = y * 14 - 3;
+               this.jamStandX = x * TILE_SIZE - 2;
+               this.jamStandY = y * TILE_SIZE - 3;
             }
          }
       }
+   }
+
+   update(){
+      this.clouds.forEach((cloud) => {
+         cloud.update();
+      });
+      this.player.update();
+      this.dice.forEach((dice, index) => {
+         dice.update(index);
+      });
+      this.tiles.forEach((row) => {
+         row.forEach((tile) => {
+            tile.update();
+         });
+      });
+      this.water.update();
    }
 
    display(){
@@ -52,7 +67,7 @@ class Game {
       this.clouds.forEach((cloud) => {
          cloud.display();
       });
-      this.seedDice.forEach((dice) => {
+      this.dice.forEach((dice) => {
          dice.display();
       });
       this.tiles.forEach((row) => {
@@ -61,60 +76,38 @@ class Game {
          });
       });
       this.player.display();
-      this.displayWater();
-      this.displayUI();
       main.graphics.image("JamStand", this.jamStandX, this.jamStandY, 17, 17);
-   }
-
-   updateWater(deltaTime){
-      this.waterTime += deltaTime;
-      this.waterLevel -= deltaTime/3;
-      this.virtualWaterLevel = Math.floor(this.waterLevel + Math.PI/2 - Math.sin(this.waterTime * 3) * 2);
-   }
-
-   displayWater(){
-      main.graphics.staticImage("Water", Math.floor(main.graphics.camX) % 9 - 12 - Math.floor(Math.cos(this.waterTime * 3) * 4), Math.floor(main.graphics.camY) + Math.floor(this.waterLevel + Math.PI/2 - Math.sin(this.waterTime * 3) * 2), 85, 41);
-      main.graphics.staticImage("Water",  Math.floor(main.graphics.camX) % 9 + 85 - 12 - Math.floor(Math.cos(this.waterTime * 3) * 4), Math.floor(main.graphics.camY) + Math.floor(this.waterLevel + Math.PI/2 - Math.sin(this.waterTime * 3) * 2), 85, 41);
+      this.water.display();
+      this.displayUI();
    }
 
    displayUI(){
-      var berriesAsString = this.berries.toString();
-      berriesAsString.split('').map(function(number, index) {
-         main.graphics.staticImage("Number" + number, 12 + index * 4, 4, 4, 5);
-      });
-      main.graphics.staticImage("UIBerry", 1, 1, 16, 11);
+      // Water Drops
       for(let i = 0; i < 3; i++){
-         if(i >= Math.floor(this.water)){
-            main.graphics.staticImage("WaterBubble2", WIDTH - 10 - i * 10, 3, 8, 8);
+         if(i >= Math.floor(this.player.waterCount)){
+            main.graphics.staticImage("IconSheet2,0", 2 + i * 6, 3, 6, 7);
          }else{
-            main.graphics.staticImage("WaterBubble", WIDTH - 10 - i * 10, 3, 8, 8);
+            main.graphics.staticImage("IconSheet1,0", 2 + i * 6, 3, 6, 7);
          }
       }
-   }
+      // Divider
+      main.graphics.staticImage("IconSheet4,0", 24, 3, 6, 7);
 
-   update(deltaTime){
-      this.clouds.forEach((cloud) => {
-         cloud.update(deltaTime);
+      // Berry Count
+      main.graphics.staticImage("IconSheet0,0", 28, 3, 6, 7);
+      main.graphics.staticImage("IconSheet3,0", 36, 4, 6, 7);
+      this.player.berryCount.toString().split('').map(function(number, index) {
+         main.graphics.staticImage("NumberSheet" + number + "," + 0, 38 + index * 4, 4, 4, 6);
       });
-      this.player.update(deltaTime);
-      this.seedDice.forEach((dice, index) => {
-         dice.update(deltaTime, index);
-      });
-      this.tiles.forEach((row) => {
-         row.forEach((tile) => {
-            tile.update(deltaTime);
-         });
-      });
-      this.updateWater(deltaTime);
    }
 
    addTile(num, x, y){ // Num, Tile coords
       if(this.tiles[y] == null){
          let row = [];
-         row[x] = new Tile(num, x * 14, y * 14);
+         row[x] = new Tile(num, x * TILE_SIZE, y * TILE_SIZE);
          this.tiles[y] = row;
       }else{
-         this.tiles[y][x] = new Tile(num, x * 14, y * 14);
+         this.tiles[y][x] = new Tile(num, x * TILE_SIZE, y * TILE_SIZE);
       }
       let above = this.getTile(x, y - 1);
       let below = this.getTile(x, y + 1);
@@ -138,87 +131,11 @@ class Game {
    }
 
    pixelHitTile(px, py){ // Pixel coords
-      if(this.tiles[Math.floor(py/14)] != null){
-         if(this.tiles[Math.floor(py/14)][Math.floor(px/14)] != null){
-            return this.tiles[Math.floor(py/14)][Math.floor(px/14)];
+      if(this.tiles[Math.floor(py/TILE_SIZE)] != null){
+         if(this.tiles[Math.floor(py/TILE_SIZE)][Math.floor(px/TILE_SIZE)] != null){
+            return this.tiles[Math.floor(py/TILE_SIZE)][Math.floor(px/TILE_SIZE)];
          }
       }
       return false;
-   }
-}
-
-class Tile{
-   constructor(num, x, y){
-      this.x = x;
-      this.y = y;
-      this.s = 14;
-      this.num = num;
-      this.age = 0;
-      this.canGrow = true;
-      this.picked = false;
-      this.action = "";
-      this.water = 0;
-      this.chosen = false;
-   }
-
-   display(){
-      if(this.canGrow){
-         if(this.num > 0 && this.water < this.num){
-            main.graphics.image("DiceWatering" + this.water + "," + (this.num - 1).toString(), this.x, this.y, this.s, this.s);
-         }else{
-            main.graphics.image("GroundDice" + Math.floor(this.age < 3 ? this.age : 3) + "," + this.num, this.x, this.y, this.s, this.s);
-         }
-         if(this.age >= 5){
-            if(this.picked){
-               main.graphics.image("Plant" + (this.num - 1).toString() + ",5", this.x, this.y - 14, this.s, this.s);
-            }else{
-               main.graphics.image("Plant" + (this.num - 1).toString() + "," + (Math.floor(this.age - 4) < 0 ? 0 : Math.floor(this.age - 4)).toString(), this.x, this.y - 14, this.s, this.s);
-            }
-         }
-      }else{
-         main.graphics.image("GroundDice1,0", this.x, this.y, this.s, this.s);
-      }
-   }
-
-   update(deltaTime){
-      if(this.picked){
-         this.action = "none";
-      }else if(this.canGrow){
-         if(Math.floor(this.age) < 8 && this.water >= this.num && this.num > 0){
-            this.age += deltaTime * 3;
-         }
-         if(Math.floor(this.age) == 8){
-            this.action = "pick";
-         }else if(this.water < this.num){
-            this.action = "water";
-         }else if(!this.chosen){
-            this.action = "roll";
-         }else{
-            this.action = "none";
-         } 
-      }else{
-         this.action = "none";
-      }
-   }
-}
-
-class Cloud{
-   constructor(x, y){
-      this.x = -75 + Math.random() * WIDTH;
-      this.y = Math.random() * HEIGHT / 2;
-      this.speed = 2 + Math.random() * 10;
-   }
-
-   display(){
-      main.graphics.staticImage("Cloud", this.x, this.y, 75, 40);
-   }
-
-   update(deltaTime){
-      this.x += deltaTime * this.speed;
-      if(this.x > WIDTH){
-         this.x = -75;
-         this.y = Math.random() * HEIGHT / 4;
-         this.speed = 2 + Math.random() * 10;
-      }
    }
 }
