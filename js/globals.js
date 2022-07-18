@@ -7,7 +7,7 @@ const DOWN = 40;
 const WIDTH = 128;
 const HEIGHT = 72;
 const TILE_SIZE = 14;
-const FRAME_RATE = 60;
+const FRAME_RATE = 100;
 
 let deltaTime = 0;
 

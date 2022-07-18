@@ -34,8 +34,8 @@ class Player {
       }else if(keys[LEFT]){
          this.direction = 0;
       }
-      if(this.standingOn){
-         if(this.standingTime < 0.1 || keys[DOWN]){
+      if(this.standingOn && !this.inWater){
+         if((this.standingTime < 0.1) || keys[DOWN]){
             this.sprite = 1;
          }else{
             if(this.time % 15 > 0 && this.time % 15 < 0.5){
@@ -51,15 +51,14 @@ class Player {
       main.graphics.image("FrogSheet" + this.sprite + "," + this.direction, this.x, this.y, 7, 7);
 
       if(this.currentAction == "roll"){
-         main.graphics.image("DiceRollSheet" + this.currentRoll + "," + "0", this.x, this.y - 5, 6, 6);
+         main.graphics.image("DiceRollSheet" + this.currentRoll + "," + "0", this.x + 1, this.y - 6, 5, 5);
       }
    }
 
    update(){
       if(main.game.water.virtualLevel){
          if(this.y > main.game.water.virtualLevel - 5){
-            this.sy = 30 + (main.game.water.virtualLevel - 4 - this.y) * 10;
-            this.ay = 0;
+            this.ay = 300 - Math.abs(Math.pow(main.game.water.virtualLevel - this.y - 18, 2));
             this.inWater = true;
             this.swimTime += 4 * deltaTime;
          }else{
@@ -67,6 +66,7 @@ class Player {
             this.inWater = false;
          }
       }
+      
       this.time += 5 * deltaTime;
       this.time %= 100;
 
@@ -74,11 +74,14 @@ class Player {
       // Air, water resistance and gravity
       if(!this.inWater){
          this.ay = 300;
-         this.sy *= Math.pow(0.998, deltaTime * FRAME_RATE)
+         this.sy *= Math.pow(0.998, deltaTime * FRAME_RATE);
          this.waterCount = Math.floor(this.waterCount);
       }else{
-         this.sy *= Math.pow(0.998, deltaTime * FRAME_RATE)
-
+         if(this.sy > 0){
+            this.sy *= Math.pow(0.98, deltaTime * FRAME_RATE);
+         }else{
+            this.sy *= Math.pow(0.89, deltaTime * FRAME_RATE)
+         }
          if(this.waterCount < 3){
             this.waterCount += 5 * deltaTime;
          }
@@ -95,6 +98,7 @@ class Player {
       }else{
          this.lastGrounded += 1 * deltaTime;
          this.standingTime = 0;
+         this.hop = false;
       }
 
       // Controls
@@ -147,7 +151,7 @@ class Player {
          this.x = this.tLeft[0].x + TILE_SIZE;
       }
       
-      if((this.standingTime > 0.1 || !this.standingOn) && !(this.tRight && this.sx > 0) && !(this.tLeft && this.sx < 0)){
+      if((this.standingTime > 0.1 || !this.standingOn || this.inWater) && !(this.tRight && this.sx > 0) && !(this.tLeft && this.sx < 0)){
          this.x += this.sx * deltaTime;
       }
 
@@ -155,17 +159,18 @@ class Player {
 
       if(keys[DOWN] && this.standingOn && Math.abs(this.x - main.game.jamStandX) < 6){
          console.log("You win");
-      }else if(keys[DOWN] && this.standingOn && this.currentAction == "none"){
+      }else if(keys[DOWN] && this.standingOn && this.currentAction == "none" && !this.inWater){
          if(this.standingOn.action == "roll" && this.berryCount > 0){
             this.berryCount --;
             this.currentAction = this.standingOn.action;
          }
          if(this.standingOn.action == "pick"){
+            main.game.started = true;
             this.berryCount += this.standingOn.num;
             this.standingOn.picked = true;
             this.currentAction = this.standingOn.action;
          }
-         if(this.standingOn.action == "water"){
+         if(this.standingOn.action == "water" && !this.inWater){
             if(this.waterCount > 0){
                this.standingOn.water ++;
                this.waterCount --;
@@ -181,7 +186,10 @@ class Player {
             this.currentRoll %= 5;
             this.waitForRoll = 0;
          }
-         if(!keys[DOWN]){
+         if(this.inWater){
+            this.action = "none";
+            this.currentRoll = 0;
+         }else if(!keys[DOWN]){
             this.standingOn.chosen = true,
             this.currentRoll = 0;
             main.game.dice.push(new Dice(Math.round(Math.random() * 5), this.x + 1, this.y - 9, this.standingOn));

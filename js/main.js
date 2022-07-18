@@ -44,7 +44,7 @@ class Main {
       this.game = new Game();
 
       // Debug mode
-      this.debug = false;
+      this.debug = true;
 
       this.highscore = 0;
    }

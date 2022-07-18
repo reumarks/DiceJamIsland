@@ -14,14 +14,16 @@ class Game {
          [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
          [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
          [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       ];
       this.worldGen();
-      this.water = new Water(TILE_SIZE * (this.map.length - 3) - 6);
-      for(var i = 0; i < 6; i++){
+      this.water = new Water(TILE_SIZE * (this.map.length - 4) - 6);
+      for(var i = 0; i < 10; i++){
          this.clouds.push(new Cloud());
       }
       this.camX = 0;
       this.camY = 0;
+      this.started = false;
    };
 
    worldGen(){
